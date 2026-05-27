@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RBB Stock Manager</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark">R</span>
+        <div>
+          <h1>Stock Manager</h1>
+          <p>ระบบสต๊อกร้านค้าออนไลน์</p>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="หมวดหมู่สินค้า">
+        <button class="nav-item active" data-category="all">ทั้งหมด <span id="countAll">0</span></button>
+      </nav>
+
+      <div class="source-box">
+        <p class="label">แหล่งข้อมูล</p>
+        <a href="https://drive.google.com/drive/folders/1PYm5BeZ1_9x7KDH_mROy_IapnDF2UXBb?usp=sharing" target="_blank" rel="noreferrer">Google Drive สินค้า</a>
+        <small>อ่านข้อมูลแบบไม่แก้ไขต้นฉบับ</small>
+      </div>
+    </aside>
+
+    <main class="app">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Inventory</p>
+          <h2>จัดการสต๊อกสินค้า</h2>
+        </div>
+        <div class="actions">
+          <button class="icon-btn" id="exportJsonBtn" title="ส่งออก JSON" aria-label="ส่งออก JSON">
+            <span>JSON</span>
+          </button>
+          <button class="icon-btn" id="exportCsvBtn" title="ส่งออก CSV" aria-label="ส่งออก CSV">
+            <span>CSV</span>
+          </button>
+          <label class="icon-btn import-btn" title="นำเข้า JSON หรือ CSV">
+            <span>นำเข้า</span>
+            <input id="importFile" type="file" accept="application/json,.json,text/csv,.csv" />
+          </label>
+          <button class="primary-btn" id="addProductBtn">+ เพิ่มสินค้า</button>
+        </div>
+      </header>
+
+      <section class="stats" aria-label="สรุปสต๊อก">
+        <article>
+          <span>รายการสินค้า</span>
+          <strong id="statProducts">0</strong>
+        </article>
+        <article>
+          <span>จำนวนรวม</span>
+          <strong id="statQty">0</strong>
+        </article>
+        <article>
+          <span>มูลค่าทุน</span>
+          <strong id="statCost">-</strong>
+        </article>
+        <article>
+          <span>มูลค่าขาย</span>
+          <strong id="statSales">-</strong>
+        </article>
+      </section>
+
+      <section class="toolbar">
+        <div class="search">
+          <span aria-hidden="true">⌕</span>
+          <input id="searchInput" type="search" placeholder="ค้นหาชื่อสินค้า แบรนด์ หมวดหมู่ SKU" />
+        </div>
+        <select id="stockFilter" aria-label="กรองสถานะสต๊อก">
+          <option value="all">ทุกสถานะ</option>
+          <option value="in">มีของ</option>
+          <option value="low">ใกล้หมด</option>
+          <option value="out">หมด</option>
+        </select>
+        <select id="sortBy" aria-label="เรียงสินค้า">
+          <option value="name">เรียงตามชื่อ</option>
+          <option value="qty">เรียงตามจำนวน</option>
+          <option value="sellPrice">เรียงตามราคาขาย</option>
+          <option value="updatedAt">แก้ไขล่าสุด</option>
+        </select>
+      </section>
+
+      <section class="product-grid" id="productGrid" aria-live="polite"></section>
+    </main>
+
+    <dialog id="productDialog">
+      <form method="dialog" class="dialog-card" id="productForm">
+        <div class="dialog-head">
+          <div>
+            <p class="eyebrow">Product</p>
+            <h3 id="dialogTitle">เพิ่มสินค้า</h3>
+          </div>
+          <button class="ghost-btn" value="cancel" aria-label="ปิด">×</button>
+        </div>
+
+        <input type="hidden" id="productId" />
+        <div class="form-grid">
+          <label>
+            ชื่อสินค้า
+            <input id="name" required />
+          </label>
+          <label>
+            SKU
+            <input id="sku" />
+          </label>
+          <label>
+            หมวดหมู่
+            <input id="category" list="categoryList" />
+            <datalist id="categoryList"></datalist>
+          </label>
+          <label>
+            แบรนด์
+            <input id="brand" />
+          </label>
+          <label>
+            ราคาต้นทุน
+            <input id="costPrice" type="number" min="0" step="1" />
+          </label>
+          <label>
+            ราคาขาย
+            <input id="sellPrice" type="number" min="0" step="1" />
+          </label>
+          <label>
+            จำนวน
+            <input id="quantity" type="number" min="0" step="1" value="0" />
+          </label>
+          <label>
+            จุดเตือนใกล้หมด
+            <input id="lowStockAt" type="number" min="0" step="1" value="1" />
+          </label>
+          <label class="wide">
+            ขนาด
+            <input id="size" />
+          </label>
+          <label class="wide">
+            รูปภาพสินค้า
+            <input id="imageUpload" type="file" accept="image/*" />
+          </label>
+          <label class="wide">
+            URL รูปภาพ
+            <input id="imageUrl" />
+          </label>
+          <label class="wide">
+            หมายเหตุ / แหล่งข้อมูล
+            <textarea id="notes" rows="3"></textarea>
+          </label>
+        </div>
+
+        <div class="dialog-actions">
+          <button class="danger-btn" type="button" id="deleteBtn">ลบรายการนี้</button>
+          <span></span>
+          <button class="ghost-btn" value="cancel">ยกเลิก</button>
+          <button class="primary-btn" value="default" id="saveBtn">บันทึก</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="./seed-products.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
